@@ -1,81 +1,77 @@
-const User = require("../models/user");
+const User = require('../models/user');
 
-class UsersController {
-  static async createUser(req, res) {
+const createUser = async (req, res) => {
     try {
-      const user = req.body;
-      const newUser = await User.createUser(user);
-      res.status(201).json(newUser);
+        const userData = req.body;
+        const newUser = await User.createUser(userData);
+        res.status(201).json({ message: 'User created successfully', user: newUser });
     } catch (error) {
-      res.status(500).json({ error: "Failed to create user" });
+        console.error('Error creating user:', error);
+        res.status(500).json({ message: 'Error creating user', error: error.message });
     }
-  }
+};
 
-  static async getAllUsers(req, res) {
+const getAllUsers = async (req, res) => {
     try {
-      const users = await User.getAllUsers();
-      res.status(200).json(users);
+        const users = await User.getAllUsers();
+        res.status(200).json({ message: 'Users retrieved successfully', users });
     } catch (error) {
-      res.status(500).json({ error: "Failed to retrieve users" });
+        console.error('Error retrieving users:', error);
+        res.status(500).json({ message: 'Error retrieving users', error: error.message });
     }
-  }
+};
 
-  static async getUserById(req, res) {
+const getUserById = async (req, res) => {
     try {
-      const { id } = req.params;
-      const user = await User.getUserById(id);
-      if (user) {
-        res.status(200).json(user);
-      } else {
-        res.status(404).json({ error: `User with ID ${id} not found` });
-      }
+        const { id } = req.params;
+        const user = await User.getUserById(Number(id));
+        if (user) {
+            res.status(200).json({ message: 'User retrieved successfully', user });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
     } catch (error) {
-      console.error("Error retrieving user:", error.message); // Log detailed error
-      res.status(500).json({ error: `Failed to retrieve user: ${error.message}` });
+        console.error('Error retrieving user by ID:', error);
+        res.status(500).json({ message: 'Error retrieving user', error: error.message });
     }
-  }
+};
+
+const updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedData = req.body;
+        await User.updateUser(Number(id), updatedData);
+        res.status(200).json({ message: 'User updated successfully' });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ message: 'Error updating user', error: error.message });
+    }
+};
+
+const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await User.deleteUser(Number(id));
+        res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ message: 'Error deleting user', error: error.message });
+    }
+};
+
+async function searchUsers(req, res) {
+    const searchTerm = req.query.searchTerm; // Extract search term from query params
   
-
-  static async updateUser(req, res) {
     try {
-      const { id } = req.params;
-      const updatedUser = req.body;
-      const success = await User.updateUser(id, updatedUser);
-      if (success) {
-        res.status(200).json({ message: "User updated successfully" });
-      } else {
-        res.status(404).json({ error: "User not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update user" });
-    }
-  }
-
-  static async deleteUser(req, res) {
-    try {
-      const { id } = req.params;
-      const success = await User.deleteUser(id);
-      if (success) {
-        res.status(200).json({ message: "User deleted successfully" });
-      } else {
-        res.status(404).json({ error: "User not found" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Failed to delete user" });
-    }
-  }
-
-  static async searchUsers(req, res) {
-    try {
-      const { searchTerm } = req.query;
       const users = await User.searchUsers(searchTerm);
-      res.status(200).json(users);
+      res.json(users);
     } catch (error) {
-      res.status(500).json({ error: "Error searching users" });
+      console.error(error);
+      res.status(500).json({ message: "Error searching users" });
     }
   }
 
-  static async getUsersWithBooks(_req, res) {
+  async function getUsersWithBooks(req, res) {
     try {
       const users = await User.getUsersWithBooks();
       res.json(users);
@@ -84,6 +80,14 @@ class UsersController {
       res.status(500).json({ message: "Error fetching users with books" });
     }
   }
-}
+  
 
-module.exports = UsersController;
+module.exports = {
+    createUser,
+    getAllUsers,
+    getUserById,
+    updateUser,
+    deleteUser,
+    searchUsers,
+    getUsersWithBooks,
+};
